@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Suspense } from "react";
 import { AddMiniatureForm } from "@/components/AddMiniatureForm";
 import { StatusBadge } from "@/components/StatusBadge";
@@ -6,7 +7,7 @@ import { StatusSelect } from "@/components/StatusSelect";
 import { requireUser } from "@/lib/dal";
 import { countByStatus, paintStatuses, statusLabels } from "@/lib/miniatures";
 import { prisma } from "@/lib/prisma";
-import { buttonSecondary, card, mutedText } from "@/lib/ui";
+import { buttonSecondary, card, link, mutedText } from "@/lib/ui";
 import { deleteMiniature } from "./actions";
 
 export const metadata: Metadata = { title: "My collection – Brushwise" };
@@ -21,7 +22,14 @@ async function CollectionContent() {
   const miniatures = await prisma.miniature.findMany({
     where: { userId: session.user.id },
     orderBy: { createdAt: "desc" },
-    select: { id: true, name: true, faction: true, status: true, notes: true },
+    select: {
+      id: true,
+      name: true,
+      faction: true,
+      status: true,
+      notes: true,
+      _count: { select: { photos: true } },
+    },
   });
 
   const counts = countByStatus(miniatures);
@@ -58,12 +66,21 @@ async function CollectionContent() {
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="font-semibold">{miniature.name}</h3>
+                    <h3 className="font-semibold">
+                      <Link href={`/collection/${miniature.id}`} className={link}>
+                        {miniature.name}
+                      </Link>
+                    </h3>
                     <StatusBadge status={miniature.status} />
                   </div>
-                  {miniature.faction && (
-                    <p className={`text-sm ${mutedText}`}>{miniature.faction}</p>
-                  )}
+                  <p className={`text-sm ${mutedText}`}>
+                    {[
+                      miniature.faction,
+                      `${miniature._count.photos} ${miniature._count.photos === 1 ? "photo" : "photos"}`,
+                    ]
+                      .filter(Boolean)
+                      .join(" · ")}
+                  </p>
                   {miniature.notes && (
                     <p className="mt-2 text-sm whitespace-pre-line">{miniature.notes}</p>
                   )}

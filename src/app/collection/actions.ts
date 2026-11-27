@@ -1,5 +1,6 @@
 "use server";
 
+import { del } from "@vercel/blob";
 import { refresh } from "next/cache";
 import { requireUser } from "@/lib/dal";
 import { prisma } from "@/lib/prisma";
@@ -66,10 +67,24 @@ export async function deleteMiniature(formData: FormData) {
     return;
   }
 
+  // The photo rows are deleted with the miniature (onDelete: Cascade),
+  // but the files in Blob are not, so their addresses are read first.
+  const photos = await prisma.photo.findMany({
+    where: { miniature: { id, userId: session.user.id } },
+    select: { url: true },
+  });
+
   // Same ownership check as above
   await prisma.miniature.deleteMany({
     where: { id, userId: session.user.id },
   });
+
+  if (photos.length > 0) {
+    // The miniature is already gone, so a failure here only leaves unused files
+    await del(photos.map((photo) => photo.url)).catch((error) => {
+      console.error("Could not delete photo files from Blob", error);
+    });
+  }
 
   refresh();
 }
