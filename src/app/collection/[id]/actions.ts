@@ -4,7 +4,7 @@ import { del, put } from "@vercel/blob";
 import { refresh } from "next/cache";
 import { getPaintingFeedback } from "@/lib/ai";
 import { requireUser } from "@/lib/dal";
-import { remainingFeedback, startOfUtcDay } from "@/lib/feedback";
+import { LIMIT_REACHED, recordAiRequest, remainingAiToday } from "@/lib/ai-usage";
 import { checkPhoto, photoPathname } from "@/lib/photos";
 import { prisma } from "@/lib/prisma";
 
@@ -110,22 +110,17 @@ export async function requestFeedback(
   }
 
   // Daily limit, so a public demo can't run up the API bill
-  const usedToday = await prisma.feedback.count({
-    where: { userId: session.user.id, createdAt: { gte: startOfUtcDay(new Date()) } },
-  });
-  if (remainingFeedback(usedToday) === 0) {
-    return {
-      status: "error",
-      error: "You've used all your AI feedback for today. Try again tomorrow.",
-    };
+  if ((await remainingAiToday(session.user.id)) === 0) {
+    return { status: "error", error: LIMIT_REACHED };
   }
+  await recordAiRequest(session.user.id, "feedback");
 
   const result = await getPaintingFeedback(photo.url);
   if (result.status === "error") {
     return { status: "error", error: result.error };
   }
 
-  const { feedback } = result;
+  const feedback = result.data;
   await prisma.feedback.create({
     data: {
       overallScore: feedback.overallScore,

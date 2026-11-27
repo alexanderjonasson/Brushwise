@@ -38,18 +38,6 @@ export const feedbackSchema = z.object({
 
 export type PaintingFeedback = z.infer<typeof feedbackSchema>;
 
-// Each user can ask for this many analyses per day, so a public demo can't
-// run up the API bill. Counted per calendar day in UTC.
-export const DAILY_FEEDBACK_LIMIT = 10;
-
-export function startOfUtcDay(now: Date): Date {
-  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-}
-
-export function remainingFeedback(usedToday: number, limit = DAILY_FEEDBACK_LIMIT): number {
-  return Math.max(0, limit - usedToday);
-}
-
 // What feedback reads like with no API key: realistic enough to build the UI
 // against, and clearly marked as an example in the interface.
 export const mockFeedback: PaintingFeedback = {

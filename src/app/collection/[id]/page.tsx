@@ -8,7 +8,8 @@ import { RequestFeedbackButton } from "@/components/RequestFeedbackButton";
 import { StatusBadge } from "@/components/StatusBadge";
 import { UploadPhotoForm } from "@/components/UploadPhotoForm";
 import { requireUser } from "@/lib/dal";
-import { DAILY_FEEDBACK_LIMIT, remainingFeedback, startOfUtcDay } from "@/lib/feedback";
+import { remainingAiToday } from "@/lib/ai-usage";
+import { DAILY_AI_LIMIT } from "@/lib/limits";
 import { prisma } from "@/lib/prisma";
 import { buttonSecondary, card, link, mutedText } from "@/lib/ui";
 import { deletePhoto } from "./actions";
@@ -48,10 +49,7 @@ async function MiniatureContent({ params }: { params: Promise<{ id: string }> })
     notFound();
   }
 
-  const usedToday = await prisma.feedback.count({
-    where: { userId: session.user.id, createdAt: { gte: startOfUtcDay(new Date()) } },
-  });
-  const remaining = remainingFeedback(usedToday);
+  const remaining = await remainingAiToday(session.user.id);
 
   return (
     <>
@@ -62,6 +60,12 @@ async function MiniatureContent({ params }: { params: Promise<{ id: string }> })
       {miniature.faction && <p className={`mt-1 ${mutedText}`}>{miniature.faction}</p>}
       {miniature.notes && <p className="mt-4 whitespace-pre-line">{miniature.notes}</p>}
 
+      <Link
+        href={`/recipes?miniature=${miniature.id}`}
+        className={`${buttonSecondary} mt-4`}>
+        Get a painting recipe for this miniature
+      </Link>
+
       <div className="mt-8">
         <UploadPhotoForm miniatureId={miniature.id} />
       </div>
@@ -71,7 +75,7 @@ async function MiniatureContent({ params }: { params: Promise<{ id: string }> })
           Photos <span className={`font-normal ${mutedText}`}>({miniature.photos.length})</span>
         </h2>
         <p className={`text-sm ${mutedText}`}>
-          AI feedback left today: {remaining} of {DAILY_FEEDBACK_LIMIT}
+          AI requests left today: {remaining} of {DAILY_AI_LIMIT}
         </p>
       </div>
 
