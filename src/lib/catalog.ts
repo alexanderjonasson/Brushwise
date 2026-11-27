@@ -1,10 +1,13 @@
-// Suggestions for the "add a miniature" form. Games Workshop has no public API,
-// so this is our own short list of well-known Warhammer 40,000 units (names
-// only – no images or rules text). Anything can still be typed by hand.
+// Suggestions for the "add a miniature" form. The publishers have no public
+// APIs, so this is our own list of well-known miniatures from popular games
+// (names only – no images or rules text). Anything can still be typed by hand.
+// For D&D we stick to generic and open-licence (SRD) monster names.
 
-export type CatalogEntry = { name: string; faction: string };
+export type CatalogEntry = { name: string; faction: string; game: string };
 
-const units: Record<string, string[]> = {
+type Factions = Record<string, string[]>;
+
+const warhammer40k: Factions = {
   "Space Marines": [
     "Intercessor Squad",
     "Intercessor Sergeant",
@@ -185,11 +188,116 @@ const units: Record<string, string[]> = {
   "Leagues of Votann": ["Hearthkyn Warriors", "Einhyr Hearthguard", "Kâhl", "Brôkhyr Thunderkyn", "Sagitaur", "Hekaton Land Fortress"],
 };
 
-export const catalog: CatalogEntry[] = Object.entries(units).flatMap(([faction, names]) =>
-  names.map((name) => ({ name, faction })),
+const horusHeresy: Factions = {
+  "Legiones Astartes": [
+    "Legion Tactical Squad",
+    "Legion Praetor",
+    "Legion Centurion",
+    "Legion Assault Squad",
+    "Legion Breacher Squad",
+    "Legion Veteran Squad",
+    "Cataphractii Terminator Squad",
+    "Tartaros Terminator Squad",
+    "Contemptor Dreadnought",
+    "Leviathan Dreadnought",
+    "Legion Rhino",
+    "Legion Sicaran Battle Tank",
+    "Legion Spartan Assault Tank",
+    "Legion Land Raider Proteus",
+  ],
+  Primarchs: [
+    "Horus Lupercal",
+    "Sanguinius",
+    "Rogal Dorn",
+    "Leman Russ",
+    "Lion El'Jonson",
+    "Fulgrim",
+    "Konrad Curze",
+    "Ferrus Manus",
+    "Vulkan",
+    "Corvus Corax",
+    "Alpharius",
+    "Lorgar",
+    "Perturabo",
+    "Jaghatai Khan",
+  ],
+  "Solar Auxilia": ["Auxilia Lasrifle Section", "Veletaris Storm Section", "Auxilia Leman Russ", "Malcador Heavy Tank"],
+  Mechanicum: ["Thallax Cohort", "Castellax Battle-automata", "Archmagos Prime", "Myrmidon Secutors"],
+  "Legio Custodes": ["Custodian Guard Squad", "Sagittarum Custodians", "Constantin Valdor"],
+};
+
+const ageOfSigmar: Factions = {
+  "Stormcast Eternals": ["Liberators", "Vindictors", "Lord-Celestant", "Lord-Vigilant", "Prosecutors", "Annihilators", "Knight-Arcanum", "Stormdrake Guard"],
+  Skaven: ["Clanrats", "Stormvermin", "Grey Seer", "Rat Ogors", "Warlock Engineer", "Hell Pit Abomination", "Plague Monks"],
+  Nighthaunt: ["Chainrasps", "Grimghast Reapers", "Knight of Shrouds", "Spirit Hosts", "Bladegheist Revenants", "Lady Olynder"],
+  "Orruk Warclans": ["Ardboys", "Orruk Brutes", "Megaboss", "Gore-gruntas", "Savage Orruks", "Kragnos"],
+  Seraphon: ["Saurus Warriors", "Skinks", "Slann Starmaster", "Carnosaur", "Stegadon", "Kroxigor"],
+  "Soulblight Gravelords": ["Deathrattle Skeletons", "Vampire Lord", "Blood Knights", "Zombie Dragon", "Nagash"],
+  "Slaves to Darkness": ["Chaos Warriors", "Chaos Knights", "Chaos Lord", "Varanguard", "Archaon the Everchosen"],
+  Sylvaneth: ["Dryads", "Treelord", "Kurnoth Hunters", "Alarielle"],
+  "Kharadron Overlords": ["Arkanaut Company", "Grundstok Thunderers", "Arkanaut Frigate"],
+  "Idoneth Deepkin": ["Namarti Thralls", "Akhelian Morrsarr Guard", "Eidolon of Mathlann"],
+  "Daughters of Khaine": ["Witch Aelves", "Sisters of Slaughter", "Morathi-Khaine"],
+  "Flesh-eater Courts": ["Crypt Ghouls", "Crypt Flayers", "Abhorrant Ghoul King"],
+  "Ossiarch Bonereapers": ["Mortek Guard", "Kavalos Deathriders", "Katakros"],
+  "Gloomspite Gitz": ["Moonclan Stabbas", "Squig Hoppers", "Rockgut Troggoths", "Loonboss"],
+  Lumineth: ["Vanari Auralan Wardens", "Vanari Dawnriders", "Teclis"],
+  "Blades of Khorne": ["Bloodreavers", "Wrathmongers", "Khorgorath"],
+  "Sons of Behemat": ["Mancrusher Gargants", "Kraken-eater Mega-Gargant"],
+};
+
+const middleEarth: Factions = {
+  "The Fellowship": ["Aragorn", "Gandalf the Grey", "Frodo Baggins", "Samwise Gamgee", "Legolas", "Gimli", "Boromir", "Meriadoc Brandybuck", "Peregrin Took"],
+  "Minas Tirith": ["Warriors of Minas Tirith", "Faramir", "Denethor", "Knights of Minas Tirith", "Citadel Guard"],
+  Rohan: ["Riders of Rohan", "Warriors of Rohan", "Théoden", "Éowyn", "Éomer", "Gamling"],
+  "Lothlórien": ["Galadriel", "Celeborn", "Haldir", "Galadhrim Warriors"],
+  Rivendell: ["Elrond", "Arwen", "Glorfindel", "Rivendell Knights"],
+  Isengard: ["Saruman", "Uruk-hai Warriors", "Uruk-hai Berserkers", "Lurtz", "Ugluk", "Isengard Troll"],
+  Mordor: ["Orc Warriors", "Morannon Orcs", "Mordor Uruk-hai", "The Witch-king of Angmar", "Ringwraiths", "The Mouth of Sauron", "Gothmog", "Mordor Troll", "Sauron"],
+  Moria: ["Moria Goblins", "Cave Troll", "The Balrog", "Durbûrz"],
+  "Serpent Horde": ["Haradrim Warriors", "War Mûmak of Harad", "Suladân"],
+  "The Hobbit": ["Thorin Oakenshield", "Bilbo Baggins", "Bard the Bowman", "Smaug", "Azog", "Bolg"],
+};
+
+const starWars: Factions = {
+  "Galactic Empire": ["Stormtroopers", "Snowtroopers", "Scout Troopers", "Death Troopers", "Darth Vader", "Emperor Palpatine", "AT-ST", "Royal Guard"],
+  "Rebel Alliance": ["Rebel Troopers", "Rebel Commandos", "Luke Skywalker", "Han Solo", "Leia Organa", "Chewbacca", "AT-RT"],
+  "Galactic Republic": ["Clone Troopers", "ARC Troopers", "Obi-Wan Kenobi", "Anakin Skywalker", "Yoda", "Ahsoka Tano", "Captain Rex"],
+  "Separatist Alliance": ["B1 Battle Droids", "B2 Super Battle Droids", "Droidekas", "General Grievous", "Count Dooku", "Magnaguards"],
+  Mandalorians: ["The Mandalorian", "Mandalorian Super Commandos", "Bo-Katan Kryze"],
+  "Bounty Hunters": ["Boba Fett", "Jango Fett", "Cad Bane", "Bossk"],
+};
+
+const dungeonsAndDragons: Factions = {
+  Dragons: ["Red Dragon", "Blue Dragon", "Green Dragon", "Black Dragon", "White Dragon", "Gold Dragon", "Silver Dragon", "Bronze Dragon", "Dragon Wyrmling", "Dracolich"],
+  Monsters: ["Owlbear", "Gelatinous Cube", "Mimic", "Troll", "Ogre", "Minotaur", "Manticore", "Basilisk", "Chimera", "Hydra", "Wyvern", "Griffon", "Kraken", "Purple Worm", "Medusa", "Roc"],
+  Giants: ["Hill Giant", "Stone Giant", "Frost Giant", "Fire Giant", "Cloud Giant", "Storm Giant"],
+  Undead: ["Lich", "Vampire", "Skeleton", "Zombie", "Ghoul", "Wraith", "Mummy Lord", "Death Knight", "Banshee"],
+  Humanoids: ["Goblin", "Hobgoblin", "Bugbear", "Orc", "Kobold", "Gnoll", "Lizardfolk", "Drow"],
+  Fiends: ["Balor", "Pit Fiend", "Imp", "Hell Hound", "Vrock"],
+  Adventurers: ["Fighter", "Wizard", "Rogue", "Cleric", "Ranger", "Paladin", "Barbarian", "Bard", "Druid", "Warlock"],
+};
+
+const games: Record<string, Factions> = {
+  "Warhammer 40,000": warhammer40k,
+  "Horus Heresy": horusHeresy,
+  "Age of Sigmar": ageOfSigmar,
+  "Middle-earth": middleEarth,
+  "Star Wars": starWars,
+  "Dungeons & Dragons": dungeonsAndDragons,
+};
+
+export const gameNames = Object.keys(games);
+
+export const catalog: CatalogEntry[] = Object.entries(games).flatMap(([game, factionsOfGame]) =>
+  Object.entries(factionsOfGame).flatMap(([faction, names]) =>
+    names.map((name) => ({ name, faction, game })),
+  ),
 );
 
-export const factions = Object.keys(units).sort((a, b) => a.localeCompare(b));
+export const factions = [...new Set(catalog.map((entry) => entry.faction))].sort((a, b) =>
+  a.localeCompare(b),
+);
 
 // Lower case, without accents and punctuation, so "kahl" finds "Kâhl" and
 // "belakor" finds "Be'lakor"
@@ -201,22 +309,38 @@ function normalise(text: string) {
     .toLowerCase();
 }
 
-// Every word of the search must appear in the unit's name or faction.
-// Names that start with the search come first, then alphabetical.
+// Every word of the search must appear in the miniature's name, faction or game.
+// Better matches come first, so "dragon" lists Red Dragon before every
+// Dungeons & Dragons monster:
+//   0 – the name starts with the search
+//   1 – every word is in the name
+//   2 – every word is in the name or faction
+//   3 – a word only matched the game
 export function searchCatalog(query: string, limit = 8): CatalogEntry[] {
   const words = normalise(query).split(/\s+/).filter(Boolean);
   if (words.length === 0) return [];
 
-  const first = words.join(" ");
+  const whole = words.join(" ");
 
   return catalog
-    .map((entry) => ({ entry, name: normalise(entry.name), faction: normalise(entry.faction) }))
-    .filter(({ name, faction }) => words.every((word) => name.includes(word) || faction.includes(word)))
-    .sort((a, b) => {
-      const aStarts = a.name.startsWith(first) ? 0 : 1;
-      const bStarts = b.name.startsWith(first) ? 0 : 1;
-      return aStarts - bStarts || a.entry.name.localeCompare(b.entry.name);
+    .map((entry) => {
+      const name = normalise(entry.name);
+      const faction = normalise(entry.faction);
+      const game = normalise(entry.game);
+      const inName = (word: string) => name.includes(word);
+      const inFaction = (word: string) => inName(word) || faction.includes(word);
+      const anywhere = (word: string) => inFaction(word) || game.includes(word);
+
+      if (!words.every(anywhere)) return null;
+      const rank =
+        name.startsWith(whole) ? 0
+        : words.every(inName) ? 1
+        : words.every(inFaction) ? 2
+        : 3;
+      return { entry, rank };
     })
+    .filter((match) => match !== null)
+    .sort((a, b) => a.rank - b.rank || a.entry.name.localeCompare(b.entry.name))
     .slice(0, limit)
     .map(({ entry }) => entry);
 }

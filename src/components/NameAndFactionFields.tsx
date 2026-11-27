@@ -54,7 +54,7 @@ export function NameAndFactionFields({ defaultName = "", defaultFaction = "" }: 
             name="name"
             required
             maxLength={80}
-            placeholder="Start typing, e.g. Hive Tyrant"
+            placeholder="Start typing, e.g. Hive Tyrant or Owlbear"
             autoComplete="off"
             value={name}
             onChange={(event) => {
@@ -82,7 +82,7 @@ export function NameAndFactionFields({ defaultName = "", defaultFaction = "" }: 
             className="absolute z-10 mt-1 max-h-72 w-full overflow-auto rounded-lg border border-neutral-200 bg-white py-1 shadow-lg dark:border-neutral-700 dark:bg-neutral-900">
             {suggestions.map((entry, index) => (
               <li
-                key={`${entry.faction}/${entry.name}`}
+                key={`${entry.game}/${entry.faction}/${entry.name}`}
                 id={`${listId}-${index}`}
                 role="option"
                 aria-selected={index === active}
@@ -96,7 +96,9 @@ export function NameAndFactionFields({ defaultName = "", defaultFaction = "" }: 
                   index === active ? "bg-amber-100 dark:bg-amber-950" : ""
                 }`}>
                 <span className="font-medium">{entry.name}</span>
-                <span className={`block text-xs ${mutedText}`}>{entry.faction}</span>
+                <span className={`block text-xs ${mutedText}`}>
+                  {entry.faction} · {entry.game}
+                </span>
               </li>
             ))}
           </ul>

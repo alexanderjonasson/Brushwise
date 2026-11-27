@@ -16,7 +16,7 @@ const exampleFeedback = {
 const steps = [
   {
     title: "Add your miniatures",
-    text: "Search for the unit, and Brushwise fills in the faction. Track each one from unpainted to done.",
+    text: "Search Warhammer, Middle-earth, Star Wars and D&D miniatures, and Brushwise fills in the faction. Track each one from unpainted to done.",
   },
   {
     title: "Photograph your work",
