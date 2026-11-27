@@ -3,9 +3,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import { FeedbackView } from "@/components/FeedbackView";
+import { RequestFeedbackButton } from "@/components/RequestFeedbackButton";
 import { StatusBadge } from "@/components/StatusBadge";
 import { UploadPhotoForm } from "@/components/UploadPhotoForm";
 import { requireUser } from "@/lib/dal";
+import { DAILY_FEEDBACK_LIMIT, remainingFeedback, startOfUtcDay } from "@/lib/feedback";
 import { prisma } from "@/lib/prisma";
 import { buttonSecondary, card, link, mutedText } from "@/lib/ui";
 import { deletePhoto } from "./actions";
@@ -29,7 +32,14 @@ async function MiniatureContent({ params }: { params: Promise<{ id: string }> })
       notes: true,
       photos: {
         orderBy: { createdAt: "desc" },
-        select: { id: true, url: true, createdAt: true },
+        select: {
+          id: true,
+          url: true,
+          createdAt: true,
+          feedback: {
+            select: { overallScore: true, summary: true, areas: true, nextSteps: true, model: true },
+          },
+        },
       },
     },
   });
@@ -37,6 +47,11 @@ async function MiniatureContent({ params }: { params: Promise<{ id: string }> })
   if (!miniature) {
     notFound();
   }
+
+  const usedToday = await prisma.feedback.count({
+    where: { userId: session.user.id, createdAt: { gte: startOfUtcDay(new Date()) } },
+  });
+  const remaining = remainingFeedback(usedToday);
 
   return (
     <>
@@ -51,39 +66,68 @@ async function MiniatureContent({ params }: { params: Promise<{ id: string }> })
         <UploadPhotoForm miniatureId={miniature.id} />
       </div>
 
-      <h2 className="mt-10 text-xl font-semibold">
-        Photos <span className={`font-normal ${mutedText}`}>({miniature.photos.length})</span>
-      </h2>
+      <div className="mt-10 flex flex-wrap items-baseline justify-between gap-2">
+        <h2 className="text-xl font-semibold">
+          Photos <span className={`font-normal ${mutedText}`}>({miniature.photos.length})</span>
+        </h2>
+        <p className={`text-sm ${mutedText}`}>
+          AI feedback left today: {remaining} of {DAILY_FEEDBACK_LIMIT}
+        </p>
+      </div>
 
       {miniature.photos.length === 0 ?
         <div className={`${card} mt-4 text-center`}>
           <p className="font-medium">No photos yet</p>
           <p className={`mt-1 text-sm ${mutedText}`}>
-            Upload a photo to keep track of your progress. AI feedback on photos is coming next.
+            Upload a photo to track your progress and get AI feedback on your painting.
           </p>
         </div>
-      : <ul className="mt-4 grid gap-4 sm:grid-cols-2">
+      : <ul className="mt-4 space-y-6">
           {miniature.photos.map((photo, index) => (
             <li key={photo.id} className={`${card} overflow-hidden p-0`}>
-              <div className="relative aspect-square bg-neutral-100 dark:bg-neutral-800">
-                <Image
-                  src={photo.url}
-                  alt={`Photo ${miniature.photos.length - index} of ${miniature.name}`}
-                  fill
-                  sizes="(min-width: 640px) 360px, 100vw"
-                  className="object-contain"
-                />
-              </div>
-              <div className="flex items-center justify-between gap-3 p-3">
-                <p className={`text-sm ${mutedText}`}>{dateFormat.format(photo.createdAt)}</p>
-                <form action={deletePhoto}>
-                  <input type="hidden" name="id" value={photo.id} />
-                  <button
-                    type="submit"
-                    className={`${buttonSecondary} py-1.5 text-red-700 dark:text-red-400`}>
-                    Delete photo
-                  </button>
-                </form>
+              <div className="grid sm:grid-cols-2">
+                <div>
+                  <div className="relative aspect-square bg-neutral-100 dark:bg-neutral-800">
+                    <Image
+                      src={photo.url}
+                      alt={`Photo ${miniature.photos.length - index} of ${miniature.name}`}
+                      fill
+                      sizes="(min-width: 640px) 380px, 100vw"
+                      className="object-contain"
+                    />
+                  </div>
+                  <div className="flex items-center justify-between gap-3 p-3">
+                    <p className={`text-sm ${mutedText}`}>
+                      {dateFormat.format(photo.createdAt)}
+                    </p>
+                    <form action={deletePhoto}>
+                      <input type="hidden" name="id" value={photo.id} />
+                      <button
+                        type="submit"
+                        className={`${buttonSecondary} py-1.5 text-red-700 dark:text-red-400`}>
+                        Delete photo
+                      </button>
+                    </form>
+                  </div>
+                </div>
+
+                <div className="border-t border-neutral-200 p-4 sm:border-t-0 sm:border-l dark:border-neutral-800">
+                  {photo.feedback ?
+                    <FeedbackView feedback={photo.feedback} />
+                  : <div className="flex h-full flex-col justify-center gap-3">
+                      <p className={`text-sm ${mutedText}`}>
+                        Let AI look at this photo and score your basecoat, shading, highlights
+                        and more, with a tip for each.
+                      </p>
+                      {remaining > 0 ?
+                        <RequestFeedbackButton photoId={photo.id} />
+                      : <p className={`text-sm ${mutedText}`}>
+                          You&apos;ve used all your AI feedback for today.
+                        </p>
+                      }
+                    </div>
+                  }
+                </div>
               </div>
             </li>
           ))}
