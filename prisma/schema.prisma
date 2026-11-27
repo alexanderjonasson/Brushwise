@@ -1,5 +1,5 @@
 // Prisma schema for Brushwise.
-// Models are added step by step. AI feedback on photos comes in step 4.
+// Models are added step by step, following PLAN.md.
 
 generator client {
   provider = "prisma-client"
@@ -52,7 +52,30 @@ model Photo {
   miniatureId String
   miniature   Miniature @relation(fields: [miniatureId], references: [id], onDelete: Cascade)
 
+  feedback Feedback?
+
   @@index([miniatureId, createdAt])
+}
+
+// AI feedback on one photo. The shape of `areas` and `nextSteps` is defined
+// and validated by the Zod schema in src/lib/feedback.ts.
+model Feedback {
+  id           String   @id @default(cuid())
+  overallScore Int // 1–10
+  summary      String
+  areas        Json // [{ area, score, comment, tip }]
+  nextSteps    Json // ["...", "..."]
+  model        String // Which model wrote it, or "mock"
+  createdAt    DateTime @default(now())
+
+  photoId String @unique
+  photo   Photo  @relation(fields: [photoId], references: [id], onDelete: Cascade)
+
+  // Stored on the feedback itself so the daily limit is one simple count
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
 }
 
 // ---------------------------------------------------------------------------
@@ -70,6 +93,7 @@ model User {
   sessions      Session[]
   accounts      Account[]
   miniatures    Miniature[]
+  feedbacks     Feedback[]
 
   @@unique([email])
   @@map("user")
