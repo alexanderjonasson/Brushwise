@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { createMiniature } from "@/app/collection/actions";
+import { NameAndFactionFields } from "@/components/NameAndFactionFields";
 import { buttonPrimary, card, errorText, input, label, mutedText } from "@/lib/ui";
 
 export function AddMiniatureForm() {
@@ -12,31 +13,13 @@ export function AddMiniatureForm() {
     <form action={formAction} className={`${card} space-y-4`}>
       <h2 className="text-lg font-semibold">Add a miniature</h2>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <label className="block">
-          <span className={label}>Name</span>
-          <input
-            name="name"
-            required
-            maxLength={80}
-            placeholder="Intercessor Sergeant"
-            defaultValue={values?.name}
-            className={input}
-          />
-        </label>
-        <label className="block">
-          <span className={label}>
-            Faction <span className={`font-normal ${mutedText}`}>(optional)</span>
-          </span>
-          <input
-            name="faction"
-            maxLength={60}
-            placeholder="Space Marines"
-            defaultValue={values?.faction}
-            className={input}
-          />
-        </label>
-      </div>
+      {/* A new key after each result gives fresh fields: empty after a
+          successful add, or the typed values again after an error */}
+      <NameAndFactionFields
+        key={state?.status === "success" ? state.submittedAt : "form"}
+        defaultName={values?.name}
+        defaultFaction={values?.faction}
+      />
 
       <label className="block">
         <span className={label}>

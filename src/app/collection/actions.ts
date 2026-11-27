@@ -10,7 +10,7 @@ import { isPaintStatus, parseMiniature, type MiniatureValues } from "@/lib/minia
 // form can show them again (React empties a form after its action has run).
 export type MiniatureFormState =
   | { status: "error"; error: string; values: MiniatureValues }
-  | { status: "success"; addedName: string }
+  | { status: "success"; addedName: string; submittedAt: number }
   | null;
 
 export async function createMiniature(
@@ -36,7 +36,7 @@ export async function createMiniature(
   });
 
   refresh();
-  return { status: "success", addedName: parsed.data.name };
+  return { status: "success", addedName: parsed.data.name, submittedAt: Date.now() };
 }
 
 export async function updateMiniatureStatus(formData: FormData) {
