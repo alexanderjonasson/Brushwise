@@ -39,6 +39,7 @@ Open [http://localhost:3002](http://localhost:3002). Brushwise uses its own port
 | `npm run build` | Generates the Prisma client and builds the app |
 | `npm run lint` | Runs ESLint |
 | `npm run typecheck` | Type-checks the project |
+| `npm test` | Runs the unit tests with Vitest |
 | `npm run db:up` | Starts the database in Docker |
 | `npm run db:migrate` | Creates and applies a migration after a schema change |
 | `npm run db:studio` | Opens Prisma Studio to browse the data |
