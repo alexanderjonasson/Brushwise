@@ -1,5 +1,5 @@
 // Prisma schema for Brushwise.
-// Models are added step by step. Next up: Miniature in step 2.
+// Models are added step by step. Photos and AI feedback come in steps 3 and 4.
 
 generator client {
   provider = "prisma-client"
@@ -8,6 +8,33 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+}
+
+// ---------------------------------------------------------------------------
+// Collection
+// ---------------------------------------------------------------------------
+
+enum PaintStatus {
+  UNPAINTED
+  IN_PROGRESS
+  DONE
+}
+
+model Miniature {
+  id        String      @id @default(cuid())
+  name      String
+  faction   String?
+  status    PaintStatus @default(UNPAINTED)
+  notes     String?
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  // Every miniature belongs to one user, and is deleted with that user
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // The collection page lists one user's miniatures, newest first
+  @@index([userId, createdAt])
 }
 
 // ---------------------------------------------------------------------------
@@ -24,6 +51,7 @@ model User {
   updatedAt     DateTime  @updatedAt
   sessions      Session[]
   accounts      Account[]
+  miniatures    Miniature[]
 
   @@unique([email])
   @@map("user")
