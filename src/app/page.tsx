@@ -31,7 +31,15 @@ const steps = [
 const features = [
   {
     title: "Your pile of shame, tamed",
-    text: "See at a glance how many miniatures are unpainted, in progress and done.",
+    text: "Photograph a box and AI reads what's in it and how many models. Start one, and it moves to your collection.",
+  },
+  {
+    title: "Recipes from your own paints",
+    text: "Scan your paint rack, then get step-by-step schemes that use what you own – with what's missing and what you can mix.",
+  },
+  {
+    title: "Citadel, Vallejo or Army Painter",
+    text: "Switch any recipe to the brand you prefer and see the closest match for every step.",
   },
   {
     title: "Feedback that teaches",
@@ -40,6 +48,10 @@ const features = [
   {
     title: "Progress over time",
     text: "Keep every photo of a miniature, so you can see how your painting improves.",
+  },
+  {
+    title: "Track every miniature",
+    text: "See at a glance how many miniatures are unpainted, in progress and done.",
   },
 ];
 
