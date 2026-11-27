@@ -29,7 +29,7 @@ npm run db:up             # starts PostgreSQL in Docker on port 5434
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+Open [http://localhost:3002](http://localhost:3002). Brushwise uses its own ports (app 3002, database 5434) so it can run next to other projects.
 
 ## Scripts
 
