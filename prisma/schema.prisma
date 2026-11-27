@@ -1,0 +1,11 @@
+// Prisma schema for Brushwise.
+// Models are added step by step: auth tables in step 1, Miniature in step 2.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
