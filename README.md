@@ -8,6 +8,13 @@ By [Alexander Jonasson](https://github.com/alexanderjonasson).
 
 **Live demo:** [brushwise.vercel.app](https://brushwise.vercel.app) – create a free account to try it. AI requests are limited per day.
 
+![AI feedback on a painted Be'lakor miniature: 8 out of 10, with a summary and a score and tip for blending](docs/feedback.png)
+
+<p>
+  <img src="docs/recipe.png" alt="A painting recipe for Abaddon the Despoiler, listing missing paints, mixes made from the user's own paints, and the first steps" width="49%" />
+  <img src="docs/home.png" alt="The start page with an example of AI feedback" width="49%" />
+</p>
+
 ## Features
 
 **AI feedback on your paint jobs**
@@ -22,6 +29,8 @@ By [Alexander Jonasson](https://github.com/alexanderjonasson).
 **Your paints**
 - A list of 167 Citadel, Vallejo and Army Painter paints to search and add
 - Or photograph your paint rack, and AI reads the labels and suggests which paints you own – you choose what gets added
+
+<img src="docs/paints.png" alt="My paints: searching the paint list, with owned paints grouped by brand" width="70%" />
 
 **Collection and pile of shame**
 - Track every miniature from unpainted to in progress to done, with a gallery of photos for each
